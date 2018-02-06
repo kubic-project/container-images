@@ -12,14 +12,14 @@
       derived_from="obsrepositories:/opensuse#tumbleweed">
       <containerconfig
         name="kubic/caasp-dex"
-        tag="2.6.1"
+        tag="2.7.1"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
-        <entrypoint execute="/usr/bin/dex"/>
+        <entrypoint execute="/usr/bin/caasp-dex"/>
         <subcommand execute="version">
         </subcommand>
       </containerconfig> 
     </type>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
@@ -28,14 +28,12 @@
     <keytable>us.map.gz</keytable>
     <hwclock>utc</hwclock>
   </preferences>
-  <users>
-    <user home="/root" name="root" groups="root"/>
-  </users>
   <repository>
     <source path="obsrepositories:/"/>
   </repository>
   <packages type="image">
     <package name="caasp-dex"/>
+    <package name="caasp-dex-branding"/>
   </packages> 
 </image>
 
