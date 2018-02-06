@@ -1,0 +1,73 @@
+-------------------------------------------------------------------
+Sat Sep 23 16:25:55 CEST 2017 - kukuk@suse.de
+
+- Add bundle command 
+
+-------------------------------------------------------------------
+Mon Sep  4 15:02:11 UTC 2017 - dcassany@suse.com
+
+- Release 2.0.1:
+  * Update author and contact emai
+  * Update derived_from reference
+  * Remvoe docker word in description in favor of container
+
+-------------------------------------------------------------------
+Fri Sep 1 14:20:15 UTC 2017 - jmassaguerpla@suse.com
+
+- Update to version 2.0 to make it clear this is for casp 2.0
+
+-------------------------------------------------------------------
+Thu Jun  8 14:25:42 UTC 2017 - jmassaguerpla@suse.com
+
+- Add entrypoint that allows to set VELUM_DB_PASSWORD_FILE and
+  VELUM_SALT_PASSWORD_FILE, so VELUM_DB_PASSWORD and
+  VELUM_SALT_PASSWORD envvars are created with the contents of
+  these files if present
+
+-------------------------------------------------------------------
+Mon May 29 10:02:16 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.3:
+  * Update base image reference
+
+-------------------------------------------------------------------
+Mon May  8 12:01:42 UTC 2017 - mmeister@suse.com
+
+- Fix ENV for ignoring assets
+  we changed it in velum/upstream to just IGNORE_ASSETS
+
+-------------------------------------------------------------------
+Wed May  3 07:56:17 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.2:
+  * Update base image file name
+
+-------------------------------------------------------------------
+Thu Mar 23 16:11:28 UTC 2017 - jmassaguerpla@suse.com
+
+- Fix: remove a "exit 0" in config.sh that was left there by accident
+
+-------------------------------------------------------------------
+Thu Mar 23 15:54:59 UTC 2017 - jmassaguerpla@suse.com
+
+- Add a symlink to bundle
+
+-------------------------------------------------------------------
+Thu Mar 23 15:41:37 UTC 2017 - jmassaguerpla@suse.com
+
+- Change port from 3000 to 80 to be in sync with caasp-container-manifest
+
+-------------------------------------------------------------------
+Thu Mar 23 11:59:44 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.1:
+  * Removed command
+  * Included appropriate working dir
+  * Set needed env variables
+
+-------------------------------------------------------------------
+Fri Mar 17 16:13:19 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.0:
+  * Initial commit
+
