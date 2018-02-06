@@ -1,0 +1,44 @@
+-------------------------------------------------------------------
+Mon Sep  4 14:57:05 UTC 2017 - dcassany@suse.com
+
+- Release 2.0.1:
+  * Update author and contact email
+  * Update derived_from reference
+  * Remove docker word in description in favor of container
+
+-------------------------------------------------------------------
+Fri Sep 1 14:20:15 UTC 2017 - jmassaguerpla@suse.com
+
+- Update to version 2.0 to make it clear this is for casp 2.0
+
+-------------------------------------------------------------------
+Thu Jun  1 15:32:21 UTC 2017 - ghayes@suse.com
+
+- Update base image to new name and location
+
+-------------------------------------------------------------------
+Fri May 26 16:44:55 UTC 2017 - jmassaguerpla@suse.com
+
+- Update tag to 2016.11.4 as this is the salt version (bsc#1040140)
+
+-------------------------------------------------------------------
+Wed May  3 07:48:21 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.1:
+  * Update base image file name 
+
+-------------------------------------------------------------------
+Fri Mar 24 11:20:05 UTC 2017 - dcassany@suse.com
+
+- Included python-M2Crypto package 
+
+-------------------------------------------------------------------
+Thu Mar 23 14:43:45 UTC 2017 - jmassaguerpla@suse.com
+
+- fix name to sles12-salt-minion to be consistent with the container name 
+
+-------------------------------------------------------------------
+Thu Mar  9 17:53:46 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.0:
+  * Initital commit 
