@@ -30,7 +30,7 @@
         </environment>
       </containerconfig> 
     </type>
-    <version>2.0.1</version>
+    <version>3.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
@@ -44,6 +44,5 @@
   </repository>
   <packages type="image">
     <package name="mariadb"/>
-    <package name="hostname"/>
   </packages> 
 </image>

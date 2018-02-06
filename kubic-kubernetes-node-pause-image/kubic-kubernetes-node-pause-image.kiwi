@@ -7,7 +7,7 @@
     <specification>pause container required by k8s</specification>
   </description>
   <preferences>
-    <type 
+    <type
       image="docker"
       derived_from="obsrepositories:/opensuse#tumbleweed">
       <containerconfig
@@ -15,9 +15,9 @@
         tag="1.0.0"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <subcommand execute="/usr/share/suse-docker-images/pause/pause"/>
-      </containerconfig> 
+      </containerconfig>
     </type>
-    <version>2.0.1</version>
+    <version>3.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
@@ -26,9 +26,6 @@
     <keytable>us.map.gz</keytable>
     <hwclock>utc</hwclock>
   </preferences>
-  <users>
-    <user home="/root" name="root" groups="root"/>
-  </users>
   <repository>
     <source path="obsrepositories:/"/>
   </repository>

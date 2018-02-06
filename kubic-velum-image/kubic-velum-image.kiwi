@@ -29,7 +29,7 @@
         <entrypoint execute="entrypoint.sh"/>
       </containerconfig>
     </type>
-    <version>2.0.1</version>
+    <version>3.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
@@ -38,15 +38,11 @@
     <keytable>us.map.gz</keytable>
     <hwclock>utc</hwclock>
   </preferences>
-  <users>
-    <user home="/root" name="root" groups="root"/>
-  </users>
   <repository>
     <source path="obsrepositories:/"/>
   </repository>
   <packages type="image">
     <package name="timezone"/>
     <package name="velum"/>
-    <package name="ruby2.4-rubygem-bundler"/>
   </packages>
 </image>
