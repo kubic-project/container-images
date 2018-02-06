@@ -1,0 +1,58 @@
+-------------------------------------------------------------------
+Mon Sep  4 14:52:41 UTC 2017 - dcassany@suse.com
+
+- Release 2.0.1:
+  * Update author and contact email
+  * Update derived_from reference
+  * Remove docker word in description in favor of container 
+
+-------------------------------------------------------------------
+Fri Sep 1 14:20:15 UTC 2017 - jmassaguerpla@suse.com
+
+- Update to version 2.0 to make it clear this is for casp 2.0
+
+-------------------------------------------------------------------
+Thu Jun  8 14:19:24 UTC 2017 - jmassaguerpla@suse.com
+
+- Changes needed to remove hardcoded secrets. This goes with
+
+https://github.com/kubic-project/salt/commit/3fc3c1a192b433372c6202a5c410629e94f9e568
+https://github.com/kubic-project/caasp-container-manifests/commit/f9488446ab1d1c76d42edcc17364c0e7526314d2
+ 
+
+-------------------------------------------------------------------
+Thu Jun  1 15:31:04 UTC 2017 - ghayes@suse.com
+
+- Update base image to new name and location
+
+-------------------------------------------------------------------
+Fri May 26 16:43:29 UTC 2017 - jmassaguerpla@suse.com
+
+- Update tag to 2016.11.4 since this is the salt version (bsc#1040140)
+
+-------------------------------------------------------------------
+Wed May  3 07:40:48 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.1:
+  * Update the base image file name 
+
+-------------------------------------------------------------------
+Fri Mar 24 11:13:31 UTC 2017 - dcassany@suse.com
+
+- Typo fix 
+
+-------------------------------------------------------------------
+Fri Mar 24 11:09:26 UTC 2017 - dcassany@suse.com
+
+- Including python-MYSQL-python package 
+
+-------------------------------------------------------------------
+Thu Mar 23 14:42:41 UTC 2017 - jmassaguerpla@suse.com
+
+- fix name to sles12-salt-master to be consistent with the container name 
+
+-------------------------------------------------------------------
+Thu Mar  9 17:49:58 UTC 2017 - dcassany@suse.com
+
+- Release 1.0.0:
+  * Initial commit 

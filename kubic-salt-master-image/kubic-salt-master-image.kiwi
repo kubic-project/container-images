@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="6.5" name="kubic-salt-master">
+  <description type="system">
+    <author>SUSE Containers Team</author>
+    <contact>containers@suse.com</contact>
+    <specification>Salt master running on an openSUSE Kubic docker guest</specification>
+  </description>
+  <preferences>
+    <type 
+      image="docker"
+      derived_from="obs://Virtualization:containers:images:openSUSE-Tumbleweed/images/opensuse#tumbleweed">
+      <containerconfig
+        name="kubic/salt-master"
+        tag="2016.11.4"
+        maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
+        <entrypoint execute="entrypoint.sh"/>
+        <subcommand execute="salt-master"/>
+      </containerconfig> 
+    </type>
+    <version>2.0.1</version>
+    <packagemanager>zypper</packagemanager>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <rpm-force>true</rpm-force>
+    <rpm-excludedocs>true</rpm-excludedocs>
+    <locale>en_US</locale>
+    <keytable>us.map.gz</keytable>
+    <hwclock>utc</hwclock>
+  </preferences>
+  <users>
+    <user home="/root" name="root" groups="root"/>
+  </users>
+  <repository>
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <package name="python-MySQL-python"/>
+    <package name="salt-master"/>
+  </packages>
+</image>
