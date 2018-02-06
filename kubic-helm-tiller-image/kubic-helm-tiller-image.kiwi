@@ -12,12 +12,12 @@
       derived_from="obsrepositories:/opensuse#tumbleweed">
       <containerconfig
         name="kubic/tiller"
-        tag="2.5.1"
+        tag="2.7.2"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <entrypoint execute="/usr/bin/tiller"/>
       </containerconfig>
     </type>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
