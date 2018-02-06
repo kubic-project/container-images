@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="6.5" name="kubic-helm-tiller">
+  <description type="system">
+    <author>SUSE Containers Team</author>
+    <contact>containers@suse.com</contact>
+    <specification>Helm tiller running on an openSUSE Kubic docker guest</specification>
+  </description>
+  <preferences>
+    <type
+      image="docker"
+      derived_from="obs://Virtualization:containers:images:openSUSE-Tumbleweed/images/opensuse#tumbleweed">
+      <containerconfig
+        name="kubic/tiller"
+        tag="2.5.1"
+        maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
+        <entrypoint execute="/usr/bin/tiller"/>
+      </containerconfig>
+    </type>
+    <version>2.0.0</version>
+    <packagemanager>zypper</packagemanager>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <rpm-force>true</rpm-force>
+    <rpm-excludedocs>true</rpm-excludedocs>
+    <locale>en_US</locale>
+    <keytable>us.map.gz</keytable>
+    <hwclock>utc</hwclock>
+  </preferences>
+  <users>
+    <user home="/var/lib/nobody" name="nobody" groups="nogroup"/>
+  </users>
+  <repository>
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <package name="helm"/>
+  </packages>
+</image>
