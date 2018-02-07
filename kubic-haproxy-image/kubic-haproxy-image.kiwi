@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="6.5" name="kubic-haproxy">
+  <description type="system">
+    <author>SUSE Containers Team</author>
+    <contact>containers@suse.com</contact>
+    <specification>HAProxy running on an openSUSE Kubic container guest</specification>
+  </description>
+  <preferences>
+    <type
+      image="docker"
+      derived_from="obsrepositories:/opensuse#tumbleweed">
+      <containerconfig
+        name="kubic/haproxy"
+        tag="1.6.0"
+        maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
+        <expose>
+          <port number="80"/>
+          <port number="443"/>
+        </expose>
+        <entrypoint execute="bash">
+            <argument name="/usr/local/bin/entrypoint.sh"/>
+        </entrypoint>
+      </containerconfig>
+    </type>
+    <version>4.0.0</version>
+    <packagemanager>zypper</packagemanager>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <rpm-force>true</rpm-force>
+    <rpm-excludedocs>true</rpm-excludedocs>
+    <locale>en_US</locale>
+    <keytable>us.map.gz</keytable>
+    <hwclock>utc</hwclock>
+  </preferences>
+  <repository>
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <package name="haproxy"/>
+    <package name="rsyslog"/>
+  </packages>
+</image>
