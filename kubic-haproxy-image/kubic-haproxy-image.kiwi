@@ -23,7 +23,7 @@
         </entrypoint>
       </containerconfig>
     </type>
-    <version>3.0.0</version>
+    <version>4.0.0</version>
     <packagemanager>zypper</packagemanager>
     <rpm-check-signatures>false</rpm-check-signatures>
     <rpm-force>true</rpm-force>
