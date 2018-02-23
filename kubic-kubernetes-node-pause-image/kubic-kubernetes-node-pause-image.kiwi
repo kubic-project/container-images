@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<image schemaversion="6.5" name="pause">
+<image schemaversion="6.5" name="kubic-pause">
   <description type="system">
     <author>SUSE Containers Team</author>
     <contact>containers@suse.com</contact>
