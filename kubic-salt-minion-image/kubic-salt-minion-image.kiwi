@@ -30,7 +30,8 @@
     <source path="obsrepositories:/"/>
   </repository>
   <packages type="image">
-    <package name="python-M2Crypto"/>
+    <package name="python3-M2Crypto"/>
+    <package name="iproute2"/>
     <package name="salt-minion"/>
   </packages>
 </image>
