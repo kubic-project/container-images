@@ -14,6 +14,7 @@ echo "Configure image: [$kiwi_iname]..."
 #======================================
 # Create bundle symlink
 #--------------------------------------
-ln -s /var/lib/velum/ruby/2.1.0/bin/bundler.ruby2.1 /bin/bundle
+ln -s $(find /var/lib/velum/vendor/bundle/ruby -type f -executable -name "bundler.*") /bin/bundle
+ln -s $(ls -d /var/lib/velum/vendor/bundle/ruby/*) /srv/velum/vendor/bundle/ruby/current
 
 exit 0

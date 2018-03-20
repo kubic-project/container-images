@@ -20,10 +20,7 @@
         </expose>
         <environment>
             <env name="RAILS_ENV" value="production"/>
-            <env name="GEM_PATH" value="/var/lib/velum/ruby/2.1.0"/>
-            <env name="BUNDLER_BIN" value="/var/lib/velum/ruby/2.1.0/bin/bundler.ruby2.1"/>
-            <env name="RUBYLIB" value="/var/lib/velum/ruby/2.1.0/gems/bundler*/lib"/>
-            <env name="RAILS_SERVE_STATIC_FILES" value="true"/>
+            <env name="GEM_PATH" value="/var/lib/velum/vendor/bundle/ruby/current"/>
         </environment>
         <entrypoint execute="entrypoint.sh"/>
       </containerconfig>
