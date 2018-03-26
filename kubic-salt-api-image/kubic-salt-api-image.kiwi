@@ -9,7 +9,7 @@
   <preferences>
     <type 
       image="docker"
-      derived_from="obsrepositories:/opensuse#tumbleweed">
+      derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/salt-api"
         tag="2016.11.4"
