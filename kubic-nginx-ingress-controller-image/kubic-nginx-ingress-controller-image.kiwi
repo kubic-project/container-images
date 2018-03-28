@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<image schemaversion="6.5" name="kubic-nginx-ingress-controller">
+  <description type="system">
+    <author>SUSE Containers Team</author>
+    <contact>containers@suse.com</contact>
+    <specification>nginx ingress controller running on an openSUSE Kubic container guest</specification>
+  </description>
+  <preferences>
+    <type
+      image="docker"
+      derived_from="obsrepositories:/opensuse/tumbleweed#current">
+      <containerconfig
+        name="kubic/nginx-ingress-controller"
+        tag="10.0"
+        maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
+        <entrypoint execute="/usr/bin/nginx-ingress-controller"/>
+      </containerconfig>
+    </type>
+    <version>4.0.0</version>
+    <packagemanager>zypper</packagemanager>
+    <rpm-check-signatures>false</rpm-check-signatures>
+    <rpm-force>true</rpm-force>
+    <rpm-excludedocs>true</rpm-excludedocs>
+    <locale>en_US</locale>
+    <keytable>us.map.gz</keytable>
+    <hwclock>utc</hwclock>
+  </preferences>
+  <repository>
+    <source path="obsrepositories:/"/>
+  </repository>
+  <packages type="image">
+    <package name="nginx"/>
+    <package name="nginx-geolite-country"/>
+    <package name="nginx-geolite-city"/>
+    <package name="nginx-geolite-asn"/>
+    <package name="nginx-ingress-controller"/>
+  </packages>
+</image>
