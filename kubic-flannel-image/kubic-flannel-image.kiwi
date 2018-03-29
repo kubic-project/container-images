@@ -12,7 +12,7 @@
       derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/flannel"
-        tag="0.9.1"
+        tag="%%TAG%%"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <entrypoint execute="/usr/sbin/flanneld"/>
       </containerconfig>

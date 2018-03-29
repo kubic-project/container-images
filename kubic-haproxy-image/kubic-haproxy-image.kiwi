@@ -12,7 +12,7 @@
       derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/haproxy"
-        tag="1.6.0"
+        tag="%%TAG%%"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <expose>
           <port number="80"/>
