@@ -12,7 +12,7 @@
       derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/chartmuseum"
-        tag="0.2.1"
+        tag="%%TAG%%"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <entrypoint execute="/usr/bin/chartmuseum"/>
       </containerconfig>

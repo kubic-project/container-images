@@ -12,7 +12,7 @@
       derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/velum-development"
-        tag="0.0"
+        tag="%%TAG%%"
         workingdir="/srv/velum"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <expose>
