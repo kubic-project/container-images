@@ -12,7 +12,7 @@
       derived_from="obsrepositories:/opensuse/tumbleweed#current">
       <containerconfig
         name="kubic/nginx-ingress-controller"
-        tag="10.0"
+        tag="%%TAG%%"
         maintainer="SUSE Containers Team &lt;containers@suse.com&gt;">
         <entrypoint execute="/usr/bin/nginx-ingress-controller"/>
       </containerconfig>
