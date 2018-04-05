@@ -8,8 +8,10 @@
 {{ $addHeaders := .AddHeaders }}
 
 {{ if $cfg.EnableModsecurity }}
-load_module /etc/nginx/modules/ngx_http_modsecurity_module.so;
+load_module "/usr/lib64/nginx/modules/ngx_http_modsecurity_module.so";
 {{ end }}
+load_module "/usr/lib64/nginx/modules/ngx_http_geoip_module.so";
+load_module "/usr/lib64/nginx/modules/ngx_stream_module.so";
 
 {{ buildOpentracingLoad $cfg }}
 
