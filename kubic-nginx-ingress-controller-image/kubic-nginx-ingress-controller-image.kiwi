@@ -30,7 +30,7 @@
     <source path="obsrepositories:/"/>
   </repository>
   <packages type="image">
-    <package name="nginx"/>
+    <package name="nginx-kubic"/>
     <package name="nginx-geolite-country"/>
     <package name="nginx-geolite-city"/>
     <package name="nginx-geolite-asn"/>
