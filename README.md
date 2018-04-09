@@ -2,12 +2,17 @@
 
 Source files required used to build the Kubic containers.
 
-# Repository Layout
+## Repository Layout
 
 The source code of each image is organized as an independent KIWI project
 in a dedicated folder under the root of the repository.
 
-# Tagging images
+Each folder contains a `*kiwi.ini` description file that is used as a template
+to generate the Kubic & CaaSP description files by running the
+`pre_checking.sh` script. This script will set the prefix for the image
+name and the base image to use.
+
+## Tagging images
 
 The tag of the image is expected to be the same value as the main application
 that the image is providing. In order to keep the application version and
