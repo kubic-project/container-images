@@ -8,7 +8,7 @@ for product in kubic caasp; do
             baseimage="opensuse/tumbleweed#current"
             distro="openSUSE Kubic"
         else
-            baseimage="suse/sles15#current"
+            baseimage="suse/sle15#current"
             distro="SLES15"
         fi
         sed -i -e "s@_BASEIMAGE_@${baseimage}@g" \
