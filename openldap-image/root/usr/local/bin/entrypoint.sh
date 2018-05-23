@@ -2,6 +2,11 @@
 set -e
 set -o pipefail
 
+# WARNING: make sure these files are not mounted
+SLAPD_CONF="/etc/openldap/slapd.conf"
+LDAP_CONF="/etc/openldap/ldap.conf"
+
+# these files are mounted from the Admin Node
 SLAPD_CONF_TEMPLATE=${SLAPD_CONF_TEMPLATE:-"/etc/openldap/slapd.conf.default"}
 LDAP_CONF_TEMPLATE=${LDAP_CONF_TEMPLATE:-"/etc/openldap/ldap.conf.default"}
 
@@ -11,56 +16,68 @@ ulimit -n 8192
 
 mkdir -p /run/slapd
 
+if [ -z "$SLAPD_PASSWORD_FILE" ]; then
+    echo "SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
+    exit 1
+fi
+
+if [ -z "$SLAPD_DOMAIN" ]; then
+    echo "SLAPD_DOMAIN must be set with the initial domain name"
+    exit 1
+fi
+
+if [ -z "$SLAPD_ORGANIZATION" ]; then
+    SLAPD_ORGANIZATION="SUSE"
+fi
+
+dc_string=""
+
+IFS="."; declare -a dc_parts=($SLAPD_DOMAIN); unset IFS
+
+for dc_part in "${dc_parts[@]}"; do
+    dc_string="$dc_string,dc=$dc_part"
+done
+
+if [ -z "$SLAPD_ADMIN_USER" ] ; then
+    SLAPD_ADMIN_USER="cn=admin,${dc_string:1}"
+fi
+
+IFS=","; declare -a admin_user_parts=($SLAPD_ADMIN_USER); unset IFS
+
+base_string="BASE ${dc_string:1}"
+suffix_string="suffix \"${dc_string:1}\""
+rootdn_string="rootdn \"${SLAPD_ADMIN_USER}\""
+
+password=`cat $SLAPD_PASSWORD_FILE`
+password_hash=`slappasswd -s "${password}"`
+rootpwd_string="rootpw ${password_hash}"
+
+echo "Copying configuration templates"
+cp -f $SLAPD_CONF_TEMPLATE $SLAPD_CONF
+cp -f $LDAP_CONF_TEMPLATE $LDAP_CONF
+
+echo "Setting up $SLAPD_CONF configuration file"
+sed -i "s|^suffix.*|${suffix_string}|g" $SLAPD_CONF
+sed -i "s|^rootdn.*|${rootdn_string}|g" $SLAPD_CONF
+sed -i "s|^rootpw.*|${rootpwd_string}|g" $SLAPD_CONF
+
+if [ -n "$SLAPD_TLS_ENABLED" ]; then
+    echo "Configuring TLS support in $SLAPD_CONF"
+    cat >>$SLAPD_CONF <<EOF
+TLSProtocolMin 3.1
+TLSCipherSuite HIGH:!SSLv3:!SSLv2:!ADH
+TLSCACertificateFile /etc/openldap/pki/ca.crt
+TLSCertificateFile /etc/openldap/pki/openldap.crt
+TLSCertificateKeyFile /etc/openldap/pki/openldap.pem
+EOF
+
+    LDAPS_URI="ldaps://"
+fi
+
 if [ ! -f /var/lib/ldap/data.mdb ]; then
     echo "Performing first start configuration..."
 
-    if [ -z "$SLAPD_PASSWORD_FILE" ]; then
-        echo "SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
-        exit 1
-    fi
-
-    if [ -z "$SLAPD_DOMAIN" ]; then
-        echo "SLAPD_DOMAIN must be set with the initial domain name"
-        exit 1
-    fi
-
-    if [ -z "$SLAPD_ORGANIZATION" ]; then
-        SLAPD_ORGANIZATION="SUSE"
-    fi
-
-    dc_string=""
-
-    IFS="."; declare -a dc_parts=($SLAPD_DOMAIN); unset IFS
-
-    for dc_part in "${dc_parts[@]}"; do
-        dc_string="$dc_string,dc=$dc_part"
-    done
-
-    if [ -z "$SLAPD_ADMIN_USER" ] ; then
-        SLAPD_ADMIN_USER="cn=admin,${dc_string:1}"
-    fi
-
-    IFS=","; declare -a admin_user_parts=($SLAPD_ADMIN_USER); unset IFS
-
-    base_string="BASE ${dc_string:1}"
-    suffix_string="suffix \"${dc_string:1}\""
-    rootdn_string="rootdn \"${SLAPD_ADMIN_USER}\""
-
-    password=`cat $SLAPD_PASSWORD_FILE`
-    password_hash=`slappasswd -s "${password}"`
-    rootpwd_string="rootpw ${password_hash}"
-
-    echo "Copying configuration templates"
-    cp -f $SLAPD_CONF_TEMPLATE /etc/openldap/slapd.conf
-    cp -f $LDAP_CONF_TEMPLATE /etc/openldap/ldap.conf
-
-    echo "Setting up /etc/openldap/slapd.conf configuration file"
-    sed -i "s|^suffix.*|${suffix_string}|g" /etc/openldap/slapd.conf
-    sed -i "s|^rootdn.*|${rootdn_string}|g" /etc/openldap/slapd.conf
-    sed -i "s|^rootpw.*|${rootpwd_string}|g" /etc/openldap/slapd.conf
-
     # populate initial schema
-
     cat >/etc/openldap/slapd.ldif <<EOF
 dn: cn=config
 objectClass: olcGlobal
@@ -177,19 +194,6 @@ EOF
 
     echo "Configuring initial database"
     slapadd -n 1 -F /etc/openldap/slapd.d -l /tmp/ldif
-
-    if [ -n "$SLAPD_TLS_ENABLED" ]; then
-        echo "Configuring TLS support in slapd.conf"
-        cat >>/etc/openldap/slapd.conf <<EOF
-TLSProtocolMin 3.1
-TLSCipherSuite HIGH:!SSLv3:!SSLv2:!ADH
-TLSCACertificateFile /etc/openldap/pki/ca.crt
-TLSCertificateFile /etc/openldap/pki/openldap.crt
-TLSCertificateKeyFile /etc/openldap/pki/openldap.pem
-EOF
-
-        LDAPS_URI="ldaps://"
-    fi
 fi
 
 echo "Starting $@"
