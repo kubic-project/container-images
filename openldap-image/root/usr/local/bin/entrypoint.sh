@@ -2,13 +2,15 @@
 set -e
 set -o pipefail
 
-# WARNING: make sure these files are not mounted
-SLAPD_CONF="/etc/openldap/slapd.conf"
-LDAP_CONF="/etc/openldap/ldap.conf"
+# The sladp executable
+EXE="/usr/lib/openldap/slapd"
 
-# these files are mounted from the Admin Node
-SLAPD_CONF_TEMPLATE=${SLAPD_CONF_TEMPLATE:-"/etc/openldap/slapd.conf.default"}
-LDAP_CONF_TEMPLATE=${LDAP_CONF_TEMPLATE:-"/etc/openldap/ldap.conf.default"}
+# Directory where slapd configuration will be stored
+# Will be persistent (mounted from the host)
+CONFIG_DIR="/etc/openldap/slapd.d"
+
+# Log level. cannot be empty (at least: 32768)
+LOG_LEVEL=2024
 
 # When not limiting the open file descritors limit, the memory consumption of
 # slapd is absurdly high. See https://github.com/docker/docker/issues/8231
@@ -17,17 +19,21 @@ ulimit -n 8192
 mkdir -p /run/slapd
 
 if [ -z "$SLAPD_PASSWORD_FILE" ]; then
-    echo "SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
+    echo ">>> SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
     exit 1
 fi
 
 if [ -z "$SLAPD_DOMAIN" ]; then
-    echo "SLAPD_DOMAIN must be set with the initial domain name"
+    echo ">>> SLAPD_DOMAIN must be set with the initial domain name"
     exit 1
 fi
 
 if [ -z "$SLAPD_ORGANIZATION" ]; then
     SLAPD_ORGANIZATION="SUSE"
+fi
+
+if [ -n "$SLAPD_TLS_ENABLED" ]; then
+    LDAPS_URI="ldaps://"
 fi
 
 dc_string=""
@@ -52,32 +58,26 @@ password=`cat $SLAPD_PASSWORD_FILE`
 password_hash=`slappasswd -s "${password}"`
 rootpwd_string="rootpw ${password_hash}"
 
-echo "Copying configuration templates"
-cp -f $SLAPD_CONF_TEMPLATE $SLAPD_CONF
-cp -f $LDAP_CONF_TEMPLATE $LDAP_CONF
+# slapd can be configured with 'slapd.conf' or with a 'slapd.d'
+# directory: we will use the directory, created from a `slapd.ldif`
+# file.
+rm -f /etc/openldap/slapd.conf
 
-echo "Setting up $SLAPD_CONF configuration file"
-sed -i "s|^suffix.*|${suffix_string}|g" $SLAPD_CONF
-sed -i "s|^rootdn.*|${rootdn_string}|g" $SLAPD_CONF
-sed -i "s|^rootpw.*|${rootpwd_string}|g" $SLAPD_CONF
-
-if [ -n "$SLAPD_TLS_ENABLED" ]; then
-    echo "Configuring TLS support in $SLAPD_CONF"
-    cat >>$SLAPD_CONF <<EOF
-TLSProtocolMin 3.1
-TLSCipherSuite HIGH:!SSLv3:!SSLv2:!ADH
-TLSCACertificateFile /etc/openldap/pki/ca.crt
-TLSCertificateFile /etc/openldap/pki/openldap.crt
-TLSCertificateKeyFile /etc/openldap/pki/openldap.pem
+# add some presets so ldapseach can be easily used...
+cat >/etc/openldap/ldap.conf <<EOF
+HOST             admin
+TLS_CACERT       /etc/openldap/pki/ca.crt
+TLS_REQCERT      allow
 EOF
 
-    LDAPS_URI="ldaps://"
-fi
-
-if [ ! -f /var/lib/ldap/data.mdb ]; then
-    echo "Performing first start configuration..."
+if [ -f /var/lib/ldap/data.mdb ]; then
+    echo ">>> Configuration and database already present"
+else
+    echo ">>> Perform first start configuration"
 
     # populate initial schema
+
+    echo ">>> Creating the slapd.ldif file"
     cat >/etc/openldap/slapd.ldif <<EOF
 dn: cn=config
 objectClass: olcGlobal
@@ -91,8 +91,8 @@ olcPidFile: /run/slapd.pid
 #
 EOF
 
-    if [ -n "$SLAPD_TLS_ENABLED" ] ; then
-        echo "Configuring TLS support in slapd.ldif"
+    if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
+        echo ">>> Enabling TLS support"
         cat >>/etc/openldap/slapd.ldif <<EOF
 olcTLSCipherSuite: HIGH:!SSLv3:!SSLv2:!ADH
 olcTLSCACertificateFile: /etc/openldap/pki/ca.crt
@@ -130,6 +130,11 @@ dn: olcDatabase=frontend,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcFrontendConfig
 olcDatabase: frontend
+olcAccess: {0}to dn.base="" by * read
+olcAccess: {1}to dn.base="cn=Subschema" by * read
+olcAccess: {2}to attrs=userPassword by anonymous auth by dn="${SLAPD_ADMIN_USER}" write by * none
+olcAccess: {3}to attrs=mail by self read by users read by * none
+olcAccess: {4}to * by * none
 #
 # Sample global access control policy:
 #	Root DSE: allow anyone to read it
@@ -165,19 +170,24 @@ olcDbIndex: default pres,eq
 olcDbIndex: uid
 olcDbIndex: cn,sn,mail pres,eq,sub
 olcDbIndex: objectClass eq
-olcSecurity: tls=1
 EOF
 
-    if [ -n "$SLAPD_TLS_ENABLED" ]; then
+    if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
         cat >>/etc/openldap/slapd.ldif <<EOF
 olcSecurity: tls=1
 EOF
     fi
 
-    echo "Configuring admin user access"
-    slapadd -n 0 -F /etc/openldap/slapd.d -l /etc/openldap/slapd.ldif
+    echo ">>> Configuring slapd from:"
+    echo ">>> -------------------------------"
+    cat /etc/openldap/slapd.ldif
+    echo ">>> -------------------------------"
+    echo
+    slapadd -n 0 -F $CONFIG_DIR -l /etc/openldap/slapd.ldif
 
+    echo ">>> Configuring admin user access..."
     admin_cn=`echo ${admin_user_parts[0]} | sed 's|cn=||g'`
+    echo ">>> Admin user: $admin_cn"
 
     cat >/tmp/ldif <<EOF
 dn: ${dc_string:1}
@@ -192,9 +202,10 @@ objectclass: organizationalRole
 cn: ${admin_cn}
 EOF
 
-    echo "Configuring initial database"
-    slapadd -n 1 -F /etc/openldap/slapd.d -l /tmp/ldif
+    echo ">>> Configuring initial database..."
+    slapadd -n 1 -F $CONFIG_DIR -l /tmp/ldif
 fi
 
-echo "Starting $@"
-exec "$@" -h "ldap:// ldapi:/// $LDAPS_URI"
+echo
+echo ">>> Starting slapd with config dir $CONFIG_DIR..."
+exec $EXE -F $CONFIG_DIR -d $LOG_LEVEL -h "ldap:// ldapi:/// $LDAPS_URI"
