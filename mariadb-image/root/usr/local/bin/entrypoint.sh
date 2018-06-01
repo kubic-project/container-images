@@ -32,6 +32,7 @@ mysql_command="/usr/bin/mysql"
 mysqld_command="/usr/sbin/mysqld"
 mysqld_systemd_helper="/usr/lib/mysql/mysql-systemd-helper"
 mysqld_config="/etc/my.cnf"
+mysqld_config_splitted="/etc/my.cnf.d"
 mysqld_tmp_socket="/tmp/mysql.sock"
 init_sql_scripts_folder="/docker-entrypoint-initdb.d"
 
@@ -91,6 +92,30 @@ cannot_find_file()
 prepare() {
     touch $config $command
     chmod 600 $config $command
+}
+
+# Read MYSQLD_CONFIG envvar and write all settings separated by ';' character.
+# E.g. MYSQLD_CONFIG="skip-networking;max_allowed_packet=16M" will produce:
+#
+# ```
+# [mysqld]
+# skip-networking
+# max_allowed_packet=16M
+# ```
+prepare_mysqld_config() {
+    if [ -z $MYSQLD_CONFIG ]; then
+        return
+    fi
+    local mysqld_env_config_file="$mysqld_config_splitted/environment-$(uuidgen).cnf"
+    echo "Creating $mysqld_env_config_file configuration file"
+    echo "# This configuration has been dynamically generated based on MYSQLD_CONFIG envvar contents" > $mysqld_env_config_file
+    echo "[mysqld]" >> $mysqld_env_config_file
+    IFS=';' read -ra CONFIG <<< "$MYSQLD_CONFIG"
+    for config in "${CONFIG[@]}"; do
+        echo "Writing '$config'"
+        echo "$config" >> $mysqld_env_config_file
+    done
+    echo "Done writing $mysqld_env_config_file"
 }
 
 do_query() {
@@ -299,6 +324,7 @@ parse_arguments $($print_defaults $defaults_file $defaults_extra_file $no_defaul
 # The actual script starts here
 
 prepare
+prepare_mysqld_config
 
 DATADIR=$(datadir)
 if [ -z "$DATADIR" ]; then
@@ -319,7 +345,7 @@ fi
 file_env 'MYSQL_ROOT_PASSWORD_FILE'
 if [ -z "$MYSQL_ROOT_PASSWORD" ] && [ -z "$MYSQL_ROOT_PASSWORD_FILE" ]; then
     echo >&2 "Error: Database uninitialized and the root password is not specified"
-    echo >&2 "You need to specify MYSQL_ROOT_PASSWORD or MYSQL_ROOT_PASSWORD_FILE" 
+    echo >&2 "You need to specify MYSQL_ROOT_PASSWORD or MYSQL_ROOT_PASSWORD_FILE"
     clean_and_exit
 fi
 
