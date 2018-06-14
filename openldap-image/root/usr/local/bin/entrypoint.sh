@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 # The sladp executable
-EXE="/usr/lib/openldap/slapd"
+EXE="/usr/sbin/slapd"
 
 # Directory where slapd configuration will be stored
 # Will be persistent (mounted from the host)
