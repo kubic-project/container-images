@@ -1,8 +1,31 @@
-#!/bin/bash 
+#!/bin/bash
 
-for product in kubic caasp; do
-    for file in *kiwi.ini; do
-        newfile=$(echo "${file}" | sed "s/^\(.*\).kiwi.ini/${product}-\1.kiwi/")
+## pre_ceckin.sh script is expected to be called from
+## a local copy of the build service image after running
+## the _services file, e.g. `osc service disabledrun`
+
+dashes_line="-------------------------------------------------------------------"
+changes_head="${dashes_line}%n%cd - %ae%n"
+changes_body="%w(67)- %s %n%n%w(67,2,2)%b"
+date_format="%a %b %d %T %Z %Y"
+
+for file in *kiwi.ini; do
+    image="${file%%.kiwi.ini}"
+    last_changes_date=$(sed "2q;d" "${image}.changes" | cut -d- -f1)
+    changes_file="${image}.changes"
+
+    # *.changes file update from git-log
+    cp "${changes_file}" "${changes_file}.tmp"
+    pushd container-images 1> /dev/null || exit 1
+        git log --pretty=format:"${changes_head}%n${changes_body}" \
+            --date=format-local:"${date_format}" --no-merges --date-order \
+            --after="${last_changes_date}" -- pre_checkin.sh "${image}" \
+            | cat - "../${changes_file}.tmp" > "../${changes_file}" 
+    popd 1> /dev/null || exit 1
+    rm "${changes_file}.tmp" 
+
+    for product in kubic caasp; do
+        newfile="${product}-${image}.kiwi"
         cp "${file}" "${newfile}"
         if [ "${product}" == "kubic" ]; then
             baseimage="opensuse/tumbleweed#current"
