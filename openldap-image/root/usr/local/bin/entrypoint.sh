@@ -124,7 +124,7 @@ include: file:///etc/openldap/schema/openldap.ldif
 include: file:///etc/openldap/schema/nis.ldif
 include: file:///etc/openldap/schema/misc.ldif
 
-# Frontend settings
+# Default permissions
 #
 dn: olcDatabase=frontend,cn=config
 objectClass: olcDatabaseConfig
@@ -132,7 +132,7 @@ objectClass: olcFrontendConfig
 olcDatabase: frontend
 olcAccess: {0}to dn.base="" by * read
 olcAccess: {1}to dn.base="cn=Subschema" by * read
-olcAccess: {2}to attrs=userPassword by anonymous auth by dn="${SLAPD_ADMIN_USER}" write by * none
+olcAccess: {2}to attrs=userPassword by anonymous auth by self write by dn="${SLAPD_ADMIN_USER}" write by * none
 olcAccess: {3}to attrs=mail by self read by users read by * none
 olcAccess: {4}to * by * none
 #
