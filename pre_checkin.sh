@@ -13,6 +13,12 @@ for file in *kiwi.ini; do
         image="${file%%.kiwi.ini}"
         changes_file="${product}-${image}.changes"
         kiwi_file="${product}-${image}.kiwi"
+
+        if [ ! -f "${changes_file}" ]; then
+            echo "Missing initialized ${changes_file}, skipping ${product} product"
+            continue
+        fi
+        
         last_changes_date=$(sed "2q;d" "${changes_file}" | cut -d- -f1)
         changes_log=""
 
@@ -22,7 +28,10 @@ for file in *kiwi.ini; do
                 --pretty=format:"${git_log_format}" -- pre_checkin.sh \
                 "${image}" | sed "1 s/- \(.*$\)/\1/")
         popd 1> /dev/null
-        [ ! -z "${changes_log}" ] || exit 1
+        if [ -z "${changes_log}" ]; then
+            echo "Missing new changelog entries, skipping ${product} product"
+            continue
+        fi
         osc vc ${changes_file} -m "${changes_log}"
 
         # create *.kiwi file from *kiwi.ini template
