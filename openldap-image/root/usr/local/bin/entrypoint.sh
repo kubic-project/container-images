@@ -3,14 +3,30 @@ set -e
 set -o pipefail
 
 # The sladp executable
-EXE="/usr/sbin/slapd"
+SLAPD="/usr/lib/openldap/slapd"
+SLAPCAT="/usr/sbin/slapcat"
+SLAPADD="/usr/sbin/slapadd"
 
 # Directory where slapd configuration will be stored
 # Will be persistent (mounted from the host)
 CONFIG_DIR="/etc/openldap/slapd.d"
 
+# the openldap database (and the backup)
+DATABASE_FILE=/var/lib/ldap/data.mdb
+DATABASE_FILE_BACKUP=/tmp/database.ldif
+
 # Log level. cannot be empty (at least: 32768)
 LOG_LEVEL=2024
+
+log() {
+    echo "[ldap-entrypoint] >>> $@"
+}
+
+dump() {
+    log "BEGIN $1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+    cat $1
+    log "END $1 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+}
 
 # When not limiting the open file descritors limit, the memory consumption of
 # slapd is absurdly high. See https://github.com/docker/docker/issues/8231
@@ -19,12 +35,12 @@ ulimit -n 8192
 mkdir -p /run/slapd
 
 if [ -z "$SLAPD_PASSWORD_FILE" ]; then
-    echo ">>> SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
+    log "SLAPD_PASSWORD_FILE must be set so the initial admin account is created"
     exit 1
 fi
 
 if [ -z "$SLAPD_DOMAIN" ]; then
-    echo ">>> SLAPD_DOMAIN must be set with the initial domain name"
+    log "SLAPD_DOMAIN must be set with the initial domain name"
     exit 1
 fi
 
@@ -50,7 +66,7 @@ fi
 
 IFS=","; declare -a admin_user_parts=($SLAPD_ADMIN_USER); unset IFS
 
-base_string="BASE ${dc_string:1}"
+base_string="${dc_string:1}"
 suffix_string="suffix \"${dc_string:1}\""
 rootdn_string="rootdn \"${SLAPD_ADMIN_USER}\""
 
@@ -68,17 +84,26 @@ cat >/etc/openldap/ldap.conf <<EOF
 HOST             admin
 TLS_CACERT       /etc/openldap/pki/ca.crt
 TLS_REQCERT      allow
+BASE             ${base_string}
 EOF
 
+log "Checking previous database..."
 if [ -f /var/lib/ldap/data.mdb ]; then
-    echo ">>> Configuration and database already present"
+    log "... saving previous database contents"
+    $SLAPCAT > $DATABASE_FILE_BACKUP
+    dump $DATABASE_FILE_BACKUP
+
+    log "... removing previous database..."
+    rm -rf $DATABASE_FILE
+    rm -rf $CONFIG_DIR/*
 else
-    echo ">>> Perform first start configuration"
+    log "... no previous database detected"
+fi
 
-    # populate initial schema
+log "Perform openldap configuration"
 
-    echo ">>> Creating the slapd.ldif file"
-    cat >/etc/openldap/slapd.ldif <<EOF
+log "Creating the slapd.ldif file"
+cat >/etc/openldap/slapd.ldif <<EOF
 dn: cn=config
 objectClass: olcGlobal
 cn: config
@@ -91,18 +116,19 @@ olcPidFile: /run/slapd.pid
 #
 EOF
 
-    if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
-        echo ">>> Enabling TLS support"
-        cat >>/etc/openldap/slapd.ldif <<EOF
+if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
+    log "Enabling TLS support"
+    cat >>/etc/openldap/slapd.ldif <<EOF
 olcTLSCipherSuite: HIGH:!SSLv3:!SSLv2:!ADH
 olcTLSCACertificateFile: /etc/openldap/pki/ca.crt
 olcTLSCertificateFile: /etc/openldap/pki/openldap.crt
 olcTLSCertificateKeyFile: /etc/openldap/pki/openldap.pem
 
 EOF
-    fi
 
-    cat >>/etc/openldap/slapd.ldif <<EOF
+fi
+
+cat >>/etc/openldap/slapd.ldif <<EOF
 #
 # Load dynamic backend modules:
 #
@@ -126,15 +152,15 @@ include: file:///etc/openldap/schema/misc.ldif
 
 # Default permissions
 #
-dn: olcDatabase=frontend,cn=config
+dn:          olcDatabase=frontend,cn=config
 objectClass: olcDatabaseConfig
 objectClass: olcFrontendConfig
 olcDatabase: frontend
-olcAccess: {0}to dn.base="" by * read
-olcAccess: {1}to dn.base="cn=Subschema" by * read
-olcAccess: {2}to attrs=userPassword by anonymous auth by self write by dn="${SLAPD_ADMIN_USER}" write by * none
-olcAccess: {3}to attrs=mail by self read by users read by * none
-olcAccess: {4}to * by * none
+olcAccess:   {0}to dn.base="" by * read
+olcAccess:   {1}to dn.base="cn=Subschema" by * read
+olcAccess:   {2}to attrs=userPassword by anonymous auth by self write by dn="${SLAPD_ADMIN_USER}" write by * none
+olcAccess:   {3}to attrs=mail by self read by users read by * none
+olcAccess:   {4}to * by * none
 #
 # Sample global access control policy:
 #	Root DSE: allow anyone to read it
@@ -172,22 +198,25 @@ olcDbIndex: cn,sn,mail pres,eq,sub
 olcDbIndex: objectClass eq
 EOF
 
-    if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
-        cat >>/etc/openldap/slapd.ldif <<EOF
+if [ ! -z "$SLAPD_TLS_ENABLED" ]; then
+    cat >>/etc/openldap/slapd.ldif <<EOF
 olcSecurity: tls=1
 EOF
-    fi
+fi
 
-    echo ">>> Configuring slapd from:"
-    echo ">>> -------------------------------"
-    cat /etc/openldap/slapd.ldif
-    echo ">>> -------------------------------"
-    echo
-    slapadd -n 0 -F $CONFIG_DIR -l /etc/openldap/slapd.ldif
+log "Configuring slapd from:"
+dump /etc/openldap/slapd.ldif
+$SLAPADD -n 0 -F $CONFIG_DIR -l /etc/openldap/slapd.ldif
 
-    echo ">>> Configuring admin user access..."
+if [ -s $DATABASE_FILE_BACKUP ] ; then
+    log "Loading previous database contents from $DATABASE_FILE_BACKUP..."
+    dump $DATABASE_FILE_BACKUP
+    $SLAPADD -n 1 -F $CONFIG_DIR -l $DATABASE_FILE_BACKUP
+    rm -f $DATABASE_FILE_BACKUP
+else
+    log "Configuring admin user access..."
     admin_cn=`echo ${admin_user_parts[0]} | sed 's|cn=||g'`
-    echo ">>> Admin user: $admin_cn"
+    log "Admin user: $admin_cn"
 
     cat >/tmp/ldif <<EOF
 dn: ${dc_string:1}
@@ -202,10 +231,14 @@ objectclass: organizationalRole
 cn: ${admin_cn}
 EOF
 
-    echo ">>> Configuring initial database..."
-    slapadd -n 1 -F $CONFIG_DIR -l /tmp/ldif
+    log "Configuring database..."
+    dump /tmp/ldif
+    $SLAPADD -n 1 -F $CONFIG_DIR -l /tmp/ldif
 fi
 
+log "New database contents:"
+slapcat
+
 echo
-echo ">>> Starting slapd with config dir $CONFIG_DIR..."
-exec $EXE -F $CONFIG_DIR -d $LOG_LEVEL -h "ldap:// ldapi:/// $LDAPS_URI"
+log "Starting slapd with config dir $CONFIG_DIR..."
+exec $SLAPD -F $CONFIG_DIR -d $LOG_LEVEL -h "ldap:// ldapi:/// $LDAPS_URI"
