@@ -18,8 +18,8 @@ chown nginx /etc/authbind/byport/80
 chmod 755 /etc/authbind/byport/80
 chown nginx /etc/authbind/byport/443
 chmod 755 /etc/authbind/byport/443
-chown nginx /etc/authbind/byuid/496
-chmod 755 /etc/authbind/byuid/496
+chown nginx /etc/authbind/byuid/33
+chmod 755 /etc/authbind/byuid/33
 
 #======================================
 # Ensure rootless image works. Files and
