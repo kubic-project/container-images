@@ -49,7 +49,7 @@ if [ "${namespace}" == "kubic" ]; then
     distro="openSUSE Kubic"
 elif [[ "${namespace}" =~ ^caasp/.* ]]; then
     product='caasp'
-    baseimage="suse/sle15#current"
+    baseimage="suse/sle15#latest"
     distro="SLES15"
 else
     usage
