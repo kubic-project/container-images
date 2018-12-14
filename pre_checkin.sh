@@ -6,6 +6,7 @@
 
 log()       { echo ">>> $@" ; }
 abort()     { log "FATAL: $@" ; exit 1 ; }
+endScript() { log "EXITING: $@" ; exit 0 ; }
 usage()     {
     cat <<USAGE
 usage:
@@ -39,7 +40,7 @@ make_changes_file() {
             ${previous_commit} -- pre_checkin.sh \
             "${image}" | sed "1 s/- \(.*$\)/\1/")
     popd 1> /dev/null
-    [ -z "${changes_log}" ] && abort "Missing new changelog entries"
+    [ -z "${changes_log}" ] && endScript "Missing new changelog entries"
     osc vc ${changes_file} -m "${changes_log}"
 }
 
