@@ -46,7 +46,7 @@ make_changes_file() {
 
 if [ "${namespace}" == "kubic" ]; then
     product='kubic'
-    baseimage="opensuse/tumbleweed#current"
+    baseimage="opensuse/tumbleweed#latest"
     distro="openSUSE Kubic"
 elif [[ "${namespace}" =~ ^caasp/.* ]]; then
     product='caasp'
