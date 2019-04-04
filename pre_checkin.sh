@@ -50,8 +50,8 @@ if [ "${namespace}" == "kubic" ]; then
     distro="openSUSE Kubic"
 elif [[ "${namespace}" =~ ^caasp/.* ]]; then
     product='caasp'
-    baseimage="suse/sle15#latest"
-    distro="SLES15"
+    baseimage="suse/sle15#15.1"
+    distro="SLES15 SP1"
 else
     usage
     abort "Unknown product. Product needs to match 'kubic|caasp/.*'"
