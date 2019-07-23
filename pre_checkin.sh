@@ -47,11 +47,13 @@ make_changes_file() {
 if [ "${namespace}" == "kubic" ]; then
     product='kubic'
     baseimage="opensuse/tumbleweed#latest"
+    baseimage_small="opensuse/busybox#latest"
     distro="openSUSE Kubic"
     label_prefix="org.opensuse.kubic"
 elif [[ "${namespace}" =~ ^caasp/.* ]]; then
     product='caasp'
     baseimage="suse/sle15#15.1"
+    baseimage_small="suse/sle15#15.1"
     distro="SLES15 SP1"
     label_prefix="com.suse.caasp"
 else
@@ -90,7 +92,8 @@ for file in *kiwi.ini; do
 
     # create *.kiwi file from *kiwi.ini template
     cp "${file}" "${kiwi_file}"
-    sed -i -e "s@_BASEIMAGE_@${baseimage}@g" \
+    sed -i -e "s@_BASEIMAGE_SMALL_@${baseimage_small}@g" \
+        -e "s@_BASEIMAGE_@${baseimage}@g" \
         -e "s@_DISTRO_@${distro}@g" \
         -e "s@_NAMESPACE_@${namespace}@g" \
         -e "s@_PRODUCT_@${product}@g" \
